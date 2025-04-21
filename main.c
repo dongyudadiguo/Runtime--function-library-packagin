@@ -40,7 +40,7 @@ int main(int argc, char const *argv[])
             {
                 strcpy(str, ptr + 1);
                 function_name = str;
-                *(ptr + 1) = ',';
+                *(ptr + 1) = '\0';
                 break;
             }else if (isspace(*ptr))
             {
