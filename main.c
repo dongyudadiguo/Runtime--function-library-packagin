@@ -5,7 +5,7 @@
 
 int main(int argc, char const *argv[])
 {
-    //argv[1] = "exp.c";//argv[1] = "exp.c";
+    argv[1] = "exp.c";//argv[1] = "exp.c";
     FILE *in = fopen(argv[1], "rb");
     fseek(in,0,SEEK_END);
     int file_size = ftell(in);
@@ -26,20 +26,32 @@ int main(int argc, char const *argv[])
                 return 0;   
             }
         }
-        char *arg_start = ptr + 1;
         *(ptr) = '\0';
+        char *arg_start = ptr + 1;
+        char *args[25];
+        int count = 0;
+        char *function_name = NULL;
+
+        while (1)
+        {
+            --ptr;
+            if (*ptr == '*')
+            {
+                function_name = ptr + 2;
+                memmove(ptr + 2, ptr + 1, strlen(ptr + 1));
+                *(ptr + 1) = '\0';
+                break;
+            }else if (isspace(*ptr))
+            {
+                *ptr = '\0';
+                function_name = ptr + 1;
+                break;
+            }
+        }
+        
         while (1){
-            if (tmp == NULL && *ptr == '*')
-            {
-                tmp = ptr + 1;
-            }else if (tmp == NULL && isspace(*ptr))
-            {
-                tmp = ptr + 1;
-            }else if (*ptr == '\n' || ((ptr - buffer) < 0)){
-                fprintf(out, "void %s__(void){\n", tmp);
-                char function_name_bak[256];
-                function_name = strcpy(function_name_bak, tmp);
-                *tmp = '\0';
+            if (*ptr == '\n' || ((ptr - buffer) < 0)){
+                fprintf(out, "void %s__(void){\n", function_name);
                 ++ptr;
                 if (!strcmp(ptr, "void"))
                 {
@@ -48,9 +60,8 @@ int main(int argc, char const *argv[])
                     count = 1;
                 }else
                 {
-                    return_type = ptr;
-                    fprintf(out, "    *(%s*)(std) = %s(", return_type, function_name);    
-                    args[0] = return_type;
+                    fprintf(out, "    *(%s*)(std) = %s(", ptr, function_name);    
+                    args[0] = ptr;
                     args[1] = arg_start;
                     count = 2;
                 }
@@ -64,7 +75,6 @@ int main(int argc, char const *argv[])
         {
             if (*ptr == ','){
                 args[count] = ptr + 2;
-                ptr = tmp;
                 end:;
 
                 while (isspace(*(--ptr)) || *ptr == '*');
@@ -85,18 +95,16 @@ int main(int argc, char const *argv[])
                 {
                     fprintf(out, "),");
                 }
-                ptr = tmp + 1;
             }else if (*ptr == ')'){
                 isbreak = 1;
-                while (isspace(*(--ptr)));
-                *(ptr + 1) = '\0';
+                *ptr = '\0';
                 if (!strcmp(arg_start, "void"))
                 {
                     goto no_param;
                 }
                 goto end;
             }
+            ++ptr;
         }
-        ++ptr;
     }
 }
