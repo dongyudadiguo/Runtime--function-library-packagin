@@ -6,18 +6,18 @@
 int main(int argc, char const *argv[])
 {
     //argv[1] = "exp.c";//argv[1] = "exp.c";
-    FILE *in = fopen(argv[1], "r");
+    FILE *in = fopen(argv[1], "rb");
     fseek(in,0,SEEK_END);
     int file_size = ftell(in);
     fseek(in,0,SEEK_SET);
     char *buffer = malloc(file_size), *ptr = buffer;
     fread(buffer,file_size,1,in);
     char output_name[256];
-    snprintf(output_name, sizeof(output_name), "Runtime-lib-%s", argv[1]);
+    char *file_name;
+    snprintf(output_name, sizeof(output_name), "Runtime-lib-%s",((file_name = strrchr(argv[1], '\\')) ? file_name + 1 : argv[1]));
     FILE *out = fopen(output_name, "w");
 
     while (1){
-        
         while (1){
             if (*(++ptr) == '(') break;
             if ((ptr - buffer) >= file_size) {
@@ -27,72 +27,49 @@ int main(int argc, char const *argv[])
             }
         }
         char *arg_start = ptr + 1;
-        while (isspace(*(--ptr)));
-        *(ptr + 1) = '\0';
-        
-        char *function_name = NULL;
-        char *tmp = NULL;
-        char *return_type = NULL;
-        char *args[25];
-        int count = 0;
+        *(ptr) = '\0';
         while (1){
-            --ptr;
-            if (tmp == NULL && function_name && isalpha(*ptr))
+            if (tmp == NULL && *ptr == '*')
             {
                 tmp = ptr + 1;
-            }else if (tmp == NULL && *ptr == '*')
+            }else if (tmp == NULL && isspace(*ptr))
             {
-                if (function_name == NULL)function_name = ptr + 1;
                 tmp = ptr + 1;
-            }else if (function_name == NULL && isspace(*ptr))
-            {
-                function_name = ptr + 1;
-            }else if (tmp && *ptr == '_')
-            {
-                tmp = NULL;
-            }else if (*ptr == '\n' || isupper(*ptr) || ((ptr - buffer) < 0)){
-                while (isspace(*(++ptr)));
+            }else if (*ptr == '\n' || ((ptr - buffer) < 0)){
+                fprintf(out, "void %s__(void){\n", tmp);
                 char function_name_bak[256];
-                function_name = strcpy(function_name_bak, function_name);
+                function_name = strcpy(function_name_bak, tmp);
                 *tmp = '\0';
-                fprintf(out, "void %s__(void){\n", function_name);
-                if (strcmp(ptr, "void"))
+                ++ptr;
+                if (!strcmp(ptr, "void"))
+                {
+                    fprintf(out, "    %s(", function_name);   
+                    args[0] = arg_start;
+                    count = 1;
+                }else
                 {
                     return_type = ptr;
-                    fprintf(out, "    *(%s*)(std) = %s( ", return_type, function_name);    
+                    fprintf(out, "    *(%s*)(std) = %s(", return_type, function_name);    
                     args[0] = return_type;
                     args[1] = arg_start;
                     count = 2;
-                }else
-                {
-                    fprintf(out, "    %s( ", function_name);   
-                    args[0] = arg_start;
-                    count = 1;
                 }
                 break;
             }
+            --ptr;
         }
-        
         ptr = arg_start;
         int isbreak = 0;
         while (1)
         {
-            ++ptr;
             if (*ptr == ','){
-                void *tmp = ptr;
-                while (isspace(*(++ptr)));
-                args[count] = ptr;
+                args[count] = ptr + 2;
                 ptr = tmp;
-                gt:;
-                while (isspace(*(--ptr)));
-                while (1)
-                {
-                    --ptr;
-                    if (isspace(*ptr))break;
-                    if (*ptr == '*')break;
-                }
-                *(ptr + 1) = '\0';
-                fprintf(out, "*(%s*)(std", args[count - 1]);
+                end:;
+
+                while (isspace(*(--ptr)) || *ptr == '*');
+                *(ptr - 1) = '\0';
+                fprintf(out, " *(%s*)(std", args[count - 1]);
                 for (size_t i = 0; i < count - 1; i++)
                 {
                     fprintf(out, " + sizeof(%s)", args[i]);
@@ -101,6 +78,7 @@ int main(int argc, char const *argv[])
                 if (isbreak)
                 {
                     fprintf(out, ")");
+                    no_param:;
                     fprintf(out, ");\n    void *tmp = buffer + ptr;\n    int tmp2 = *(int*)(tmp);\n    if(tmp2 < 0){\n        ptr = - tmp2;\n    }else{\n        imp = fun[tmp2];\n        ptr += sizeof(int);\n    }\n}\n");
                     break;
                 }else
@@ -110,9 +88,15 @@ int main(int argc, char const *argv[])
                 ptr = tmp + 1;
             }else if (*ptr == ')'){
                 isbreak = 1;
-                goto gt;
+                while (isspace(*(--ptr)));
+                *(ptr + 1) = '\0';
+                if (!strcmp(arg_start, "void"))
+                {
+                    goto no_param;
+                }
+                goto end;
             }
-            
         }
+        ++ptr;
     }
 }
