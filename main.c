@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
             {
                 *ptr = '\0';
                 function_name = ptr + 1;
-                fprintf(list, "%s\n", function_name);
+                fprintf(list, " %s,", function_name);
                 break;
             }
         }
