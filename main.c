@@ -5,7 +5,7 @@
 
 int main(int argc, char const *argv[])
 {
-    argv[1] = "exp.c";//argv[1] = "exp.c";
+    //argv[1] = "exp.c";//argv[1] = "exp.c";
     FILE *in = fopen(argv[1], "rb");
     fseek(in,0,SEEK_END);
     int file_size = ftell(in);
@@ -31,14 +31,14 @@ int main(int argc, char const *argv[])
         char *args[25];
         int count = 0;
         char *function_name = NULL;
-
+        char str[256];
         while (1)
         {
             --ptr;
             if (*ptr == '*')
             {
-                function_name = ptr + 2;
-                memmove(ptr + 2, ptr + 1, strlen(ptr + 1));
+                strcpy(str, ptr + 1);
+                function_name = str;
                 *(ptr + 1) = '\0';
                 break;
             }else if (isspace(*ptr))
@@ -76,9 +76,9 @@ int main(int argc, char const *argv[])
             if (*ptr == ','){
                 args[count] = ptr + 2;
                 end:;
-
-                while (isspace(*(--ptr)) || *ptr == '*');
-                *(ptr - 1) = '\0';
+                char *ptr2 = ptr;
+                while (!(isspace(*(--ptr2)) || *ptr2 == '*'));
+                *(ptr2 + 1) = '\0';
                 fprintf(out, " *(%s*)(std", args[count - 1]);
                 for (size_t i = 0; i < count - 1; i++)
                 {
