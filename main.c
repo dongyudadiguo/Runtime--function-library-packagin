@@ -16,7 +16,8 @@ int main(int argc, char const *argv[])
     char *file_name;
     snprintf(output_name, sizeof(output_name), "Runtime-lib-%s",((file_name = strrchr(argv[1], '\\')) ? file_name + 1 : argv[1]));
     FILE *out = fopen(output_name, "w");
-
+    FILE *list = fopen("list.txt", "a");
+    fprintf(list, "\n%s\n", output_name);
     while (1){
         while (1){
             if (*(++ptr) == '(') break;
@@ -39,12 +40,13 @@ int main(int argc, char const *argv[])
             {
                 strcpy(str, ptr + 1);
                 function_name = str;
-                *(ptr + 1) = '\0';
+                *(ptr + 1) = ',';
                 break;
             }else if (isspace(*ptr))
             {
                 *ptr = '\0';
                 function_name = ptr + 1;
+                fprintf(list, "%s\n", function_name);
                 break;
             }
         }
