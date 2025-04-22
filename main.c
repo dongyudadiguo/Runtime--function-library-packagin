@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
                 {
                     fprintf(out, ")");
                     no_param:;
-                    fprintf(out, ");\n    void *tmp = buffer + ptr;\n    int tmp2 = *(int*)(tmp);\n    if(tmp2 < 0){\n        ptr = - tmp2;\n    }else{\n        imp = fun[tmp2];\n        ptr += sizeof(int);\n    }\n}\n");
+                    fprintf(out, ");\n    exit\n}\n");
                     break;
                 }else
                 {
