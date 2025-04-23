@@ -16,8 +16,7 @@ int main(int argc, char const *argv[])
     char *file_name;
     snprintf(output_name, sizeof(output_name), "Runtime-lib-%s",((file_name = strrchr(argv[1], '\\')) ? file_name + 1 : argv[1]));
     FILE *out = fopen(output_name, "w");
-    FILE *list = fopen("list.txt", "a");
-    fprintf(list, "\n%s\n", output_name);
+    fprintf(out, "#define Package(name, body, size)\\\nvoid name (void){\\\n    body\\\n    int tmp2 = *(int*)(buffer + (ptr += size));\\\n    if(tmp2 > 0){\\\n        imp = fun[tmp2];\\\n    }else{\\\n        stack[stackPtr++] = ptr;\\\n        imp = fun[*(int*)(buffer + (ptr = - tmp2))];\\\n    }\\\n}\n");
     while (1){
         while (1){
             if (*(++ptr) == '(') break;
@@ -46,26 +45,26 @@ int main(int argc, char const *argv[])
             {
                 *ptr = '\0';
                 function_name = ptr + 1;
-                fprintf(list, " %s,", function_name);
                 break;
             }
         }
-        
+        fprintf(out, "Package( %s__,",function_name);
         while (1){
             if (*ptr == '\n' || ((ptr - buffer) < 0)){
-                fprintf(out, "void %s__(void){\n", function_name);
                 ++ptr;
                 if (!strcmp(ptr, "void"))
                 {
-                    fprintf(out, "    %s(", function_name);   
-                    args[0] = arg_start;
-                    count = 1;
-                }else
-                {
-                    fprintf(out, "    *(%s*)(std) = %s(", ptr, function_name);    
-                    args[0] = ptr;
+                    fprintf(out, "%s(", function_name);  
+                    args[0] = "int"; 
                     args[1] = arg_start;
                     count = 2;
+                }else
+                {
+                    fprintf(out, "*(%s*)(std) = %s(", ptr, function_name);
+                    args[0] = "int";
+                    args[1] = ptr;
+                    args[2] = arg_start;
+                    count = 3;
                 }
                 break;
             }
@@ -81,28 +80,38 @@ int main(int argc, char const *argv[])
                 char *ptr2 = ptr;
                 while (!(isspace(*(--ptr2)) || *ptr2 == '*'));
                 *(ptr2 + 1) = '\0';
-                fprintf(out, " *(%s*)(std", args[count - 1]);
+                fprintf(out, " *(%s*)(buffer + ptr", args[count - 1]);
                 for (size_t i = 0; i < count - 1; i++)
                 {
                     fprintf(out, " + sizeof(%s)", args[i]);
                 }
-                count++;
+                
                 if (isbreak)
                 {
-                    fprintf(out, ")");
-                    no_param:;
-                    fprintf(out, ");\n    exit\n}\n");
+                    fprintf(out, "));, sizeof(%s)", args[0]);
+                    for (size_t i = 1; i < count; i++)
+                    {
+                        fprintf(out, " + sizeof(%s)", args[i]);
+                    }
+                    fprintf(out, ")\n");
                     break;
                 }else
                 {
                     fprintf(out, "),");
                 }
+                count++;
             }else if (*ptr == ')'){
                 isbreak = 1;
                 *ptr = '\0';
                 if (!strcmp(arg_start, "void"))
                 {
-                    goto no_param;
+                    fprintf(out, ");, sizeof(%s)", args[0]);
+                    for (size_t i = 1; i < count - 1; i++)
+                    {
+                        fprintf(out, " + sizeof(%s)", args[i]);
+                    }
+                    fprintf(out, ")\n");
+                    break;
                 }
                 goto end;
             }
