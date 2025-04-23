@@ -60,7 +60,7 @@ int main(int argc, char const *argv[])
                     count = 2;
                 }else
                 {
-                    fprintf(out, "*(%s*)(std) = %s(", ptr, function_name);
+                    fprintf(out, "*(%s*)(buffer + ptr + sizeof(int)) = %s(", ptr, function_name);
                     args[0] = "int";
                     args[1] = ptr;
                     args[2] = arg_start;
