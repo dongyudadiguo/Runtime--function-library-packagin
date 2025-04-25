@@ -61,11 +61,11 @@ int main(int argc, char const *argv[])
             fprintf(out, "Package( %s__,",function_name);
             fprintf(sta, "void %s__(void);\n",function_name);
             if (fist){
-                fprintf(lst, " %s",function_name);
+                fprintf(lst, " %s__",function_name);
                 fist = 0;
             }else
             {
-                fprintf(lst, ", %s",function_name);
+                fprintf(lst, ", %s__",function_name);
             }
             
             
