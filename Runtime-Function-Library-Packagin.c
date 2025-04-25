@@ -21,10 +21,11 @@ int main(int argc, char const *argv[])
         FILE *def = fopen("Runtime-Define-Package.h", "w");
         snprintf(output_name, sizeof(output_name), "Runtime-lib-statements-%s",file_name);
         FILE *sta = fopen(output_name, "w");
-        fprintf(sta, "\n//%s:\n", file_name);
         snprintf(output_name, sizeof(output_name), "Runtime-lib-list-%s",file_name);
         FILE *lst = fopen(output_name, "w");
-        fprintf(lst, "#define list-%s", file_name);
+        strcpy(output_name, file_name);
+        strchr(output_name, '.')[0] = '\0';
+        fprintf(lst, "#define %s__", output_name);
         fprintf(def, "#define Package(name, body, size)\\\nvoid name (void){\\\n    body\\\n    int tmp2 = *(int*)(buffer + (ptr += size));\\\n    if(tmp2 > 0){\\\n        imp = fun[tmp2];\\\n    }else{\\\n        stack[stackPtr++] = ptr;\\\n        imp = fun[*(int*)(buffer + (ptr = - tmp2))];\\\n    }\\\n}\n");
         int fist = 1;
         while (1){
