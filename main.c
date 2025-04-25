@@ -18,6 +18,7 @@ int main(int argc, char const *argv[])
     FILE *out = fopen(output_name, "w");
     FILE *def = fopen("Define-Package.h", "w");
     FILE *sta = fopen("lib-statements.h", "a");
+    fprintf(sta, "\n//%s:\n", output_name);
     fprintf(def, "#define Package(name, body, size)\\\nvoid name (void){\\\n    body\\\n    int tmp2 = *(int*)(buffer + (ptr += size));\\\n    if(tmp2 > 0){\\\n        imp = fun[tmp2];\\\n    }else{\\\n        stack[stackPtr++] = ptr;\\\n        imp = fun[*(int*)(buffer + (ptr = - tmp2))];\\\n    }\\\n}\n");
     while (1){
         while (1){
