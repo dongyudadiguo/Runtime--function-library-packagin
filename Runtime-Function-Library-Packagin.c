@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
         fread(buffer,file_size,1,in);
         char output_name[256];
         char *file_name;
-        snprintf(output_name, sizeof(output_name), "Runtime-lib-%s",((file_name = strrchr(argv[i], '\\')) ? (file_name += 1) : (file_name = (char*)argv[i])));
+        snprintf(output_name, sizeof(output_name), "Runtime-lib-definition-%s",((file_name = strrchr(argv[i], '\\')) ? (file_name += 1) : (file_name = (char*)argv[i])));
         FILE *out = fopen(output_name, "w");
         FILE *def = fopen("Runtime-Define-Package.h", "w");
         snprintf(output_name, sizeof(output_name), "Runtime-lib-statements-%s",file_name);
