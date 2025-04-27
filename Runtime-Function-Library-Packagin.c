@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
         strcpy(output_name, file_name);
         strchr(output_name, '.')[0] = '\0';
         fprintf(lst, "#define %s_", output_name);
-        fprintf(def, "#define Package(name, body, size)\\\nvoid name (void){\\\n    body\\\n    int tmp2 = *(int*)(buffer + (ptr += size));\\\n    if(tmp2 >= 0){\\\n        imp = fun[tmp2];\\\n    }else{\\\n        stack[stackPtr++] = ptr;\\\n        imp = fun[*(int*)(buffer + (ptr = - tmp2))];\\\n    }\\\n}\n");
+        fprintf(def, "#define Package(name, body, size)\\\nvoid name (void){\\\n    body\\\n    imp = fun[*(int*)(buffer + (ptr += size))];\\\n}\n");
         int fist = 1;
         while (1){
             while (1){
